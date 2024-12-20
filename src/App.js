@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 const initialFriends = [
   {
     id: 118836,
@@ -20,27 +22,97 @@ const initialFriends = [
 ];
 
 export default function App() {
+  const [friends, setFriends] = useState(initialFriends);
+
+  function handleAddFriends(friend) {
+    setFriends((friends) => [...friends, friend]);
+  }
+
   return (
     <div className="app">
-      <Sidebar />
+      <Sidebar onAddFriends={handleAddFriends} friends={friends} />
     </div>
   );
 }
 
-function Sidebar() {
+function Sidebar({ onAddFriends, friends }) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <div className="sidebar">
-      <FriendList />
-      <button className="button">Add friend</button>
+      <FriendList friends={friends} />
+
+      {!isOpen ? (
+        <button className="button" onClick={() => setIsOpen(!isOpen)}>
+          Add friend
+        </button>
+      ) : (
+        <AddFriend
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+          onAddFriends={onAddFriends}
+        />
+      )}
     </div>
   );
 }
 
-function FriendList() {
+function AddFriend({ isOpen, setIsOpen, onAddFriends }) {
+  const [inputFriendName, setInputFriendName] = useState("");
+  const [inputImageUrl, setInputImageUrl] = useState(
+    "https://i.pravatar.cc/48"
+  );
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (!inputFriendName) return;
+
+    const newFriend = {
+      id: Date.now(),
+      name: inputFriendName,
+      image: inputImageUrl,
+      balance: 0,
+    };
+
+    onAddFriends(newFriend);
+
+    setInputFriendName("");
+    setInputImageUrl("https://i.pravatar.cc/48");
+  }
+
+  return (
+    <div className="sidebar">
+      <form className="form-add-friend" onSubmit={handleSubmit}>
+        <label>🧑‍🤝‍🧑 Friend name</label>
+        <input
+          type="text"
+          value={inputFriendName}
+          onChange={(e) => setInputFriendName(e.target.value)}
+        ></input>
+        <label>🌄 Image URL</label>
+        <input
+          type="text"
+          value={inputImageUrl}
+          onChange={(e) => setInputImageUrl(e.target.value)}
+        ></input>
+        <button className="button" type="submit">
+          Add
+        </button>
+      </form>
+      <button className="button" onClick={() => setIsOpen(!isOpen)}>
+        Close
+      </button>
+    </div>
+  );
+}
+
+function FriendList({ friends }) {
   return (
     <ul>
-      {initialFriends.map((friend) => (
+      {friends.map((friend) => (
         <Friend
+          key={friend.id}
           id={friend.id}
           name={friend.name}
           profile={friend.image}
